@@ -1,8 +1,8 @@
 import { usePizzaOfTheDay } from "./usePizzaOfTheDay";
 
-const intl = Intl.NumberFormat("en-IN", {
+const intl = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "INR",
+  currency: "USD",
 });
 
 export default function PizzaOfTheDay() {

@@ -3,7 +3,7 @@ import Pizza from "./Pizza";
 
 const intl = new Intl.NumberFormat("en-US", {
   style: "currency",
-  currency: "INR",
+  currency: "USD",
 });
 
 const pizzaSizes = [
