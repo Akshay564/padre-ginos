@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-export function usePizzaOfTheDay() {
-  const [pizzaOfTheDay, setPizzaOfTheDay] = useState();
+export const usePizzaOfTheDay = () => {
+  const [pizzaOfTheDay, setPizzaOfTheDay] = useState(null);
 
   useEffect(() => {
     async function getPizzaOfTheDay() {
@@ -14,4 +14,4 @@ export function usePizzaOfTheDay() {
   }, []);
 
   return pizzaOfTheDay;
-}
+};
