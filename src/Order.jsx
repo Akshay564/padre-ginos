@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Pizza from "./Pizza";
 import { Cart } from "./Cart";
+import { CartContext } from "./CartContext";
 
 const intl = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -30,7 +31,8 @@ export default function Order() {
   const [pizzaSize, setPizzaSize] = useState("M");
   const [pizzas, setPizzas] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [cart, setCart] = useState([]);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [cart, setCart] = useContext(CartContext);
 
   let selectedPizza, price;
 
@@ -61,20 +63,28 @@ export default function Order() {
   };
 
   async function checkout() {
-    setIsLoading(true);
+    setIsCheckingOut(true);
 
-    await fetch("/api/order", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        cart,
-      }),
-    });
+    try {
+      await fetch("/api/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cart,
+        }),
+      });
 
-    setCart([]);
-    setIsLoading(false);
+      // Add a small delay to prevent jarring transition
+      setTimeout(() => {
+        setCart([]);
+        setIsCheckingOut(false);
+      }, 300);
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      setIsCheckingOut(false);
+    }
   }
 
   if (!isLoading) {
@@ -140,7 +150,7 @@ export default function Order() {
       {isLoading ? (
         <h2>LOADING …</h2>
       ) : (
-        <Cart checkout={checkout} cart={cart} />
+        <Cart checkout={checkout} cart={cart} isCheckingOut={isCheckingOut} />
       )}
     </div>
   );
