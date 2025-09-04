@@ -11,7 +11,7 @@ function PastOrders() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["past-orders", page],
-    queryFn: () => getPastOrders(page),
+    queryFn: ({ signal }) => getPastOrders(page, { signal }),
     staleTime: 30000,
   });
 

@@ -39,7 +39,7 @@ function Order() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [cart, setCart] = useContext(CartContext);
-  const { setLoading } = useLoading();
+  const { setLoading, removeLoading } = useLoading();
 
   let selectedPizza, price;
 
@@ -53,24 +53,50 @@ function Order() {
     }
   };
 
-  async function fetchPizzaTypes() {
-    setLoading("pizzas", true);
-    try {
-      const pizzaRes = await fetch("/api/pizzas");
-      const pizzaJson = await pizzaRes.json();
-      setPizzas(pizzaJson);
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch pizzas:", error);
-      setIsLoading(false);
-    } finally {
-      setLoading("pizzas", false);
-    }
-  }
-
   useEffect(() => {
+    const abortController = new AbortController();
+    let isActive = true; // Flag to track if component is still mounted
+
+    async function fetchPizzaTypes() {
+      setLoading("pizzas", true);
+      try {
+        const pizzaRes = await fetch("/api/pizzas", {
+          signal: abortController.signal,
+        });
+
+        if (!pizzaRes.ok) {
+          throw new Error(`HTTP error! status: ${pizzaRes.status}`);
+        }
+
+        const pizzaJson = await pizzaRes.json();
+        
+        // Only update state if component is still active
+        if (isActive) {
+          setPizzas(pizzaJson);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          console.error("Failed to fetch pizzas:", error);
+          if (isActive) {
+            setIsLoading(false);
+          }
+        }
+        // For AbortError, don't update state since component is unmounting
+      } finally {
+        setLoading("pizzas", false); // Always clean up global loading state
+      }
+    }
+
     fetchPizzaTypes();
-  }, []); // Remove setLoading from dependencies to prevent infinite loop
+
+    // Cleanup function
+    return () => {
+      isActive = false; // Mark component as inactive
+      abortController.abort();
+      removeLoading("pizzas");
+    };
+  }, []); // Empty dependencies to prevent infinite loop
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -102,9 +128,9 @@ function Order() {
     }
   }
 
-  if (!isLoading) {
+  if (!isLoading && pizzas.length > 0) {
     selectedPizza = pizzas.find((p) => p.id === pizzaType);
-    price = selectedPizza.sizes[pizzaSize];
+    price = selectedPizza?.sizes[pizzaSize];
   }
 
   return (

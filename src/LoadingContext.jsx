@@ -12,10 +12,19 @@ export const LoadingProvider = ({ children }) => {
     }));
   }, []);
 
+  const removeLoading = useCallback((key) => {
+    setLoadingStates((prev) => {
+      const { [key]: removed, ...rest } = prev;
+      return rest;
+    });
+  }, []);
+
   const isAnyLoading = Object.values(loadingStates).some(Boolean);
 
   return (
-    <LoadingContext.Provider value={{ setLoading, isAnyLoading }}>
+    <LoadingContext.Provider
+      value={{ setLoading, removeLoading, isAnyLoading }}
+    >
       {children}
     </LoadingContext.Provider>
   );
