@@ -53,7 +53,10 @@ function PastOrders() {
           Previous
         </button>
         <div>{page}</div>
-        <button disabled={!data || data.length < 10} onClick={() => setPage(page + 1)}>
+        <button
+          disabled={!data || data.length < 10}
+          onClick={() => setPage(page + 1)}
+        >
           Next
         </button>
       </div>

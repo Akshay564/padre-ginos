@@ -6,9 +6,9 @@ export const LoadingProvider = ({ children }) => {
   const [loadingStates, setLoadingStates] = useState({});
 
   const setLoading = useCallback((key, isLoading) => {
-    setLoadingStates(prev => ({
+    setLoadingStates((prev) => ({
       ...prev,
-      [key]: isLoading
+      [key]: isLoading,
     }));
   }, []);
 
