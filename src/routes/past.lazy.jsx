@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import getPastOrders from "../api/getPastOrders";
+import { useQuery } from "../useQuery";
 
 export const Route = createLazyFileRoute("/past")({
   component: PastOrders,
@@ -9,16 +9,17 @@ export const Route = createLazyFileRoute("/past")({
 
 function PastOrders() {
   const [page, setPage] = useState(1);
-  const { isFetching, isLoading, data } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["past-orders", page],
     queryFn: () => getPastOrders(page),
     staleTime: 30000,
   });
 
-  if (isLoading || isFetching) {
+  if (isError) {
     return (
       <div className="past-orders">
-        <h2>LOADING …</h2>
+        <h2>Error loading past orders</h2>
+        <p>{error?.message || "Something went wrong"}</p>
       </div>
     );
   }
@@ -52,7 +53,7 @@ function PastOrders() {
           Previous
         </button>
         <div>{page}</div>
-        <button disabled={data.length < 10} onClick={() => setPage(page + 1)}>
+        <button disabled={!data || data.length < 10} onClick={() => setPage(page + 1)}>
           Next
         </button>
       </div>

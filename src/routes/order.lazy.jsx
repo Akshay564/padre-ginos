@@ -3,6 +3,7 @@ import Pizza from "../Pizza";
 import { Cart } from "../Cart";
 import { CartContext } from "../CartContext";
 import { createLazyFileRoute } from "@tanstack/react-router";
+import { useLoading } from "../LoadingContext";
 
 export const Route = createLazyFileRoute("/order")({
   component: Order,
@@ -38,6 +39,7 @@ function Order() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [cart, setCart] = useContext(CartContext);
+  const { setLoading } = useLoading();
 
   let selectedPizza, price;
 
@@ -52,15 +54,23 @@ function Order() {
   };
 
   async function fetchPizzaTypes() {
-    const pizzaRes = await fetch("/api/pizzas");
-    const pizzaJson = await pizzaRes.json();
-    setPizzas(pizzaJson);
-    setIsLoading(false);
+    setLoading("pizzas", true);
+    try {
+      const pizzaRes = await fetch("/api/pizzas");
+      const pizzaJson = await pizzaRes.json();
+      setPizzas(pizzaJson);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch pizzas:", error);
+      setIsLoading(false);
+    } finally {
+      setLoading("pizzas", false);
+    }
   }
 
   useEffect(() => {
     fetchPizzaTypes();
-  }, []);
+  }, []); // Remove setLoading from dependencies to prevent infinite loop
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -152,11 +162,7 @@ function Order() {
           )}
         </form>
       </div>
-      {isLoading ? (
-        <h2>LOADING …</h2>
-      ) : (
-        <Cart checkout={checkout} cart={cart} isCheckingOut={isCheckingOut} />
-      )}
+      <Cart checkout={checkout} cart={cart} isCheckingOut={isCheckingOut} />
     </div>
   );
 }

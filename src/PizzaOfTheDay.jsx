@@ -9,7 +9,7 @@ const PizzaOfTheDay = () => {
   const pizzaOfTheDay = usePizzaOfTheDay();
 
   if (!pizzaOfTheDay) {
-    return <div>Loading...</div>;
+    return null; // Don't show individual loading, use global loader
   }
 
   return (
