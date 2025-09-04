@@ -9,7 +9,7 @@ export const Route = createLazyFileRoute("/past")({
 
 function PastOrders() {
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey: ["past-orders", page],
     queryFn: ({ signal }) => getPastOrders(page, { signal }),
     staleTime: 30000,

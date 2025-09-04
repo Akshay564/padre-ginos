@@ -1,9 +1,10 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import Pizza from "../Pizza";
 import { Cart } from "../Cart";
 import { CartContext } from "../CartContext";
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { useLoading } from "../LoadingContext";
+import { useQuery } from "../useQuery";
+import getPizzas from "../api/getPizzas";
 
 export const Route = createLazyFileRoute("/order")({
   component: Order,
@@ -35,11 +36,20 @@ const pizzaSizes = [
 function Order() {
   const [pizzaType, setPizzaType] = useState("bbq_ckn");
   const [pizzaSize, setPizzaSize] = useState("M");
-  const [pizzas, setPizzas] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [cart, setCart] = useContext(CartContext);
-  const { setLoading, removeLoading } = useLoading();
+
+  // Use React Query to fetch pizzas - loading handled automatically by QueryGlobalLoader
+  const {
+    data: pizzas = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["pizzas"],
+    queryFn: ({ signal }) => getPizzas({ signal }),
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
 
   let selectedPizza, price;
 
@@ -53,55 +63,26 @@ function Order() {
     }
   };
 
-  useEffect(() => {
-    const abortController = new AbortController();
-    let isActive = true; // Flag to track if component is still mounted
-
-    async function fetchPizzaTypes() {
-      setLoading("pizzas", true);
-      try {
-        const pizzaRes = await fetch("/api/pizzas", {
-          signal: abortController.signal,
-        });
-
-        if (!pizzaRes.ok) {
-          throw new Error(`HTTP error! status: ${pizzaRes.status}`);
-        }
-
-        const pizzaJson = await pizzaRes.json();
-        
-        // Only update state if component is still active
-        if (isActive) {
-          setPizzas(pizzaJson);
-          setIsLoading(false);
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.error("Failed to fetch pizzas:", error);
-          if (isActive) {
-            setIsLoading(false);
-          }
-        }
-        // For AbortError, don't update state since component is unmounting
-      } finally {
-        setLoading("pizzas", false); // Always clean up global loading state
-      }
-    }
-
-    fetchPizzaTypes();
-
-    // Cleanup function
-    return () => {
-      isActive = false; // Mark component as inactive
-      abortController.abort();
-      removeLoading("pizzas");
-    };
-  }, []); // Empty dependencies to prevent infinite loop
+  // Calculate selected pizza and price
+  if (!isLoading && pizzas.length > 0) {
+    selectedPizza = pizzas.find((p) => p.id === pizzaType);
+    price = selectedPizza?.sizes[pizzaSize];
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setCart([...cart, { pizza: selectedPizza, size: pizzaSize, price }]);
   };
+
+  // Show error state if pizza fetch fails
+  if (isError) {
+    return (
+      <div className="order-page">
+        <h2>Error loading pizzas</h2>
+        <p>{error?.message || "Something went wrong"}</p>
+      </div>
+    );
+  }
 
   async function checkout() {
     setIsCheckingOut(true);
