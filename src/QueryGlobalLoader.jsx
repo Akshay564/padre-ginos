@@ -1,20 +1,49 @@
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 
 const QueryGlobalLoader = () => {
-  const isFetching = useIsFetching(); // Tracks all query fetching
+  // Use predicate to exclude queries marked with excludeFromGlobalLoader meta
+  const isFetching = useIsFetching({
+    predicate: (query) => {
+      // Exclude queries that have excludeFromGlobalLoader meta property
+      return !query.meta?.excludeFromGlobalLoader;
+    },
+  });
+
   const isMutating = useIsMutating(); // Tracks all mutations (POST, PUT, etc.)
 
   const isLoading = isFetching > 0 || isMutating > 0;
 
   if (!isLoading) return null;
 
+  // Determine loading message based on what's happening
+  const getLoadingMessage = () => {
+    if (isMutating > 0) {
+      return {
+        title: "Processing...",
+        subtitle: "Please wait while we save your changes",
+      };
+    }
+    if (isFetching > 0) {
+      return {
+        title: "Loading...",
+        subtitle: "Please wait while we prepare everything for you",
+      };
+    }
+    return {
+      title: "Loading...",
+      subtitle: "Please wait...",
+    };
+  };
+
+  const { title, subtitle } = getLoadingMessage();
+
   return (
     <div className="global-loader">
       <div className="global-loader-backdrop">
         <div className="global-loader-content">
           <div className="spinner"></div>
-          <h2>Loading...</h2>
-          <p>Please wait while we prepare everything for you</p>
+          <h2>{title}</h2>
+          <p>{subtitle}</p>
           {/* Debug info in development */}
           {process.env.NODE_ENV === "development" && (
             <small style={{ marginTop: "1rem", opacity: 0.7 }}>
