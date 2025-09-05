@@ -4,10 +4,19 @@ import getPastOrders from "../api/getPastOrders";
 import { useQuery } from "../useQuery";
 import getPastOrderDetails from "../api/getPastOrderDetails";
 import Modal from "../Modal";
+import ErrorBoundary from "../ErrorBoundary";
 
 export const Route = createLazyFileRoute("/past")({
-  component: PastOrders,
+  component: ErrorBoundaryWrappedPastOrders,
 });
+
+function ErrorBoundaryWrappedPastOrders() {
+  return (
+    <ErrorBoundary>
+      <PastOrders />
+    </ErrorBoundary>
+  );
+}
 
 const intl = new Intl.NumberFormat("en-US", {
   style: "currency",
