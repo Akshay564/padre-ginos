@@ -9,9 +9,9 @@ export default function Header() {
       <Link to={"/"}>
         <h1 className="logo">Padre Gino's Pizza</h1>
       </Link>
-      <div className="nav-cart">
+      <Link to={"/cart"} className="nav-cart">
         🛒<span className="nav-cart-number">{cart.length}</span>
-      </div>
+      </Link>
     </nav>
   );
 }

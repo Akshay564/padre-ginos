@@ -120,7 +120,7 @@ h2::after {
 
 .order {
   width: 100%;
-  margin-left: 5%;
+  /* margin-left: 5%; */
 }
 
 form div {
@@ -270,7 +270,6 @@ button:disabled {
   max-width: 1300px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 2fr 1fr;
   gap: 50px;
 }
 

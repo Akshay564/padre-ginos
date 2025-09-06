@@ -1,6 +1,5 @@
 import { useContext, useState } from "react";
 import Pizza from "../Pizza";
-import { Cart } from "../Cart";
 import { CartContext } from "../CartContext";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useQuery } from "../useQuery";
@@ -36,7 +35,6 @@ const pizzaSizes = [
 function Order() {
   const [pizzaType, setPizzaType] = useState("bbq_ckn");
   const [pizzaSize, setPizzaSize] = useState("M");
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [cart, setCart] = useContext(CartContext);
 
   // Use React Query to fetch pizzas - loading handled automatically by QueryGlobalLoader
@@ -82,31 +80,6 @@ function Order() {
         <p>{error?.message || "Something went wrong"}</p>
       </div>
     );
-  }
-
-  async function checkout() {
-    setIsCheckingOut(true);
-
-    try {
-      await fetch("/api/order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          cart,
-        }),
-      });
-
-      // Add a small delay to prevent jarring transition
-      setTimeout(() => {
-        setCart([]);
-        setIsCheckingOut(false);
-      }, 300);
-    } catch (error) {
-      console.error("Checkout failed:", error);
-      setIsCheckingOut(false);
-    }
   }
 
   if (!isLoading && pizzas.length > 0) {
@@ -169,7 +142,6 @@ function Order() {
           )}
         </form>
       </div>
-      <Cart checkout={checkout} cart={cart} isCheckingOut={isCheckingOut} />
     </div>
   );
 }

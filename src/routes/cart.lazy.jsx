@@ -1,9 +1,49 @@
+import { createLazyFileRoute, useNavigate } from "@tanstack/react-router";
+import { useContext, useState } from "react";
+import { CartContext } from "../CartContext";
+
 const intl = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
 });
 
-export function Cart({ checkout, cart, isCheckingOut }) {
+export const Route = createLazyFileRoute("/cart")({
+  component: () => <Cart />,
+});
+
+function Cart() {
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [cart, setCart] = useContext(CartContext);
+  const navigate = useNavigate();
+
+  async function checkout() {
+    setIsCheckingOut(true);
+
+    try {
+      await fetch("/api/order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cart,
+        }),
+      });
+
+      // Add a small delay to prevent jarring transition
+      setTimeout(() => {
+        setCart([]);
+        navigate({
+          to: "/",
+        });
+        setIsCheckingOut(false);
+      }, 300);
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      setIsCheckingOut(false);
+    }
+  }
+
   let total = 0;
 
   for (let i = 0; i < cart.length; i++) {
