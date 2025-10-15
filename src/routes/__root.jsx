@@ -5,7 +5,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useState } from "react";
 import { CartContext } from "../CartContext";
 import Header from "../Header";
-import PizzaOfTheDay from "../pizzaOfTheDay";
+import PizzaOfTheDay from "../PizzaOfTheDay";
 
 export const Route = createRootRoute({
   component: () => {
