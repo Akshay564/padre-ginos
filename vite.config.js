@@ -15,7 +15,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [TanStackRouterVite(), react()],
+  plugins: [TanStackRouterVite(), react(),   base: "/",],
   test: {
     environment: "happy-dom",
   },
